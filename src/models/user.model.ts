@@ -26,27 +26,20 @@ export class User extends Entity {
 
   @property({
     type: 'string',
-    defaultFn: '10',
-  })
-  win_stop: string;
-
-  @property({
-    type: 'string',
-    defaultFn: '10',
-  })
-  loss_stop: string;
-
-  @property({
-    type: 'string',
     required: true,
   })
   email: string;
 
   @property({
     type: 'string',
-    nullable: false,
+    required: true,
   })
-  role: string;
+  name: string;
+
+  @property({
+    type: 'string',
+  })
+  cep: string;
 
   @hasOne(() => UserCredentials)
   userCredentials: UserCredentials;

@@ -1,11 +1,11 @@
-import {HttpErrors} from '@loopback/rest';
-import {Credentials, UserRepository} from '../repositories';
-import {User} from '../models';
 import {UserService} from '@loopback/authentication';
-import {securityId, UserProfile} from '@loopback/security';
-import {repository} from '@loopback/repository';
-import {PasswordHasherBindings} from '../keys';
 import {inject} from '@loopback/context';
+import {repository} from '@loopback/repository';
+import {HttpErrors} from '@loopback/rest';
+import {securityId, UserProfile} from '@loopback/security';
+import {PasswordHasherBindings} from '../keys';
+import {User} from '../models';
+import {Credentials, UserRepository} from '../repositories';
 import {PasswordHasher} from './hash-password.service';
 
 export class MyUserService implements UserService<User, Credentials> {
@@ -49,8 +49,7 @@ export class MyUserService implements UserService<User, Credentials> {
     // since first name and lastName are optional, no error is thrown if not provided
     return {
       [securityId]: user.id,
-      id: user.id,
-      role: user.role,
+      id: user.id
     };
   }
 }
