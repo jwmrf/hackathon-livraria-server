@@ -2,7 +2,7 @@ import {authenticate, TokenService, UserService} from '@loopback/authentication'
 import {authorize} from '@loopback/authorization';
 import {inject} from '@loopback/core';
 import {model, property, repository} from '@loopback/repository';
-import {get, HttpErrors, param, post, requestBody} from '@loopback/rest';
+import {del, get, HttpErrors, param, post, requestBody} from '@loopback/rest';
 import {SecurityBindings, securityId, UserProfile} from '@loopback/security';
 import _ from 'lodash';
 import {PasswordHasherBindings, TokenServiceBindings, UserServiceBindings} from '../keys';
@@ -162,4 +162,26 @@ export class UserController {
 
     return {token};
   }
+  @get('/usersall', {
+    responses: {
+      '200': {
+        description: 'User DELETE success',
+      },
+    },
+  })
+  async getAll(): Promise<any> {
+    return await this.userRepository.find({fields: {id: true}});
+  }
+
+  @del('/user/{id}', {
+    responses: {
+      '204': {
+        description: 'User DELETE success',
+      },
+    },
+  })
+  async deleteById(@param.path.string('id') id: string): Promise<void> {
+    await this.userRepository.deleteById(id);
+  }
 }
+

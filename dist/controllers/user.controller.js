@@ -76,6 +76,12 @@ let UserController = class UserController {
         const token = await this.jwtService.generateToken(userProfile);
         return { token };
     }
+    async getAll() {
+        return await this.userRepository.find({ fields: { id: true } });
+    }
+    async deleteById(id) {
+        await this.userRepository.deleteById(id);
+    }
 };
 tslib_1.__decorate([
     rest_1.post('/users/sign-up', {
@@ -166,6 +172,31 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], UserController.prototype, "login", null);
+tslib_1.__decorate([
+    rest_1.get('/usersall', {
+        responses: {
+            '200': {
+                description: 'User DELETE success',
+            },
+        },
+    }),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", Promise)
+], UserController.prototype, "getAll", null);
+tslib_1.__decorate([
+    rest_1.del('/user/{id}', {
+        responses: {
+            '204': {
+                description: 'User DELETE success',
+            },
+        },
+    }),
+    tslib_1.__param(0, rest_1.param.path.string('id')),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String]),
+    tslib_1.__metadata("design:returntype", Promise)
+], UserController.prototype, "deleteById", null);
 UserController = tslib_1.__decorate([
     tslib_1.__param(0, repository_1.repository(repositories_1.UserRepository)),
     tslib_1.__param(1, core_1.inject(keys_1.PasswordHasherBindings.PASSWORD_HASHER)),

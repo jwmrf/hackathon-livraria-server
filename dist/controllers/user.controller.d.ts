@@ -18,4 +18,6 @@ export declare class UserController {
     login(credentials: Credentials): Promise<{
         token: string;
     }>;
+    getAll(): Promise<any>;
+    deleteById(id: string): Promise<void>;
 }
