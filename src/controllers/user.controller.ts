@@ -84,57 +84,6 @@ export class UserController {
     }
   }
 
-  @post('/users/sign-up/admin', {
-    responses: {
-      '200': {
-        description: 'User',
-        content: {
-          'application/json': {
-            schema: {
-              'x-ts-type': User,
-            },
-          },
-        },
-      },
-    },
-  })
-  async createAdmin(
-    @requestBody(CredentialsRequestBody)
-    newUserRequest: Credentials,
-  ): Promise<User> {
-    // All new users have the "customer" role by default
-    newUserRequest.role = 'admin';
-    // ensure a valid email value and password value
-    validateCredentials(_.pick(newUserRequest, ['email', 'password']));
-
-    // encrypt the password
-    const password = await this.passwordHasher.hashPassword(
-      newUserRequest.password,
-    );
-
-    try {
-      // create the new user
-      const savedUser = await this.userRepository.create(
-        _.omit(newUserRequest, 'password'),
-      );
-
-      // set the password
-      await this.userRepository
-        .userCredentials(savedUser.id)
-        .create({password});
-
-      return savedUser;
-    } catch (error) {
-      // MongoError 11000 duplicate key
-      if (error.code === 11000 && error.errmsg.includes('index: uniqueEmail')) {
-        throw new HttpErrors.Conflict('Email value is already taken');
-      } else {
-        throw error;
-      }
-    }
-  }
-
-
   @get('/users/{userId}', {
     responses: {
       '200': {
