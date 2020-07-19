@@ -32,7 +32,6 @@ export class User extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
   name: string;
 
@@ -40,6 +39,11 @@ export class User extends Entity {
     type: 'string',
   })
   cep: string;
+
+  @property({
+    type: 'string',
+  })
+  role: string;
 
   @hasOne(() => UserCredentials)
   userCredentials: UserCredentials;

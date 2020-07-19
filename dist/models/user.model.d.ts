@@ -5,6 +5,7 @@ export declare class User extends Entity {
     email: string;
     name: string;
     cep: string;
+    role: string;
     userCredentials: UserCredentials;
     constructor(data?: Partial<User>);
 }

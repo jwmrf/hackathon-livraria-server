@@ -35,7 +35,8 @@ let MyUserService = class MyUserService {
         // since first name and lastName are optional, no error is thrown if not provided
         return {
             [security_1.securityId]: user.id,
-            id: user.id
+            id: user.id,
+            role: user.role
         };
     }
 };
