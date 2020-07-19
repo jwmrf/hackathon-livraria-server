@@ -7,13 +7,16 @@ const models_1 = require("../models");
 const datasources_1 = require("../datasources");
 const core_1 = require("@loopback/core");
 let LivroRepository = class LivroRepository extends repository_1.DefaultCrudRepository {
-    constructor(dataSource) {
+    constructor(dataSource, livroGeneroRepositoryGetter) {
         super(models_1.Livro, dataSource);
+        this.livroGeneroRepositoryGetter = livroGeneroRepositoryGetter;
+        this.generos = this.createHasManyRepositoryFactoryFor('generos', livroGeneroRepositoryGetter);
+        this.registerInclusionResolver('generos', this.generos.inclusionResolver);
     }
 };
 LivroRepository = tslib_1.__decorate([
-    tslib_1.__param(0, core_1.inject('datasources.postgres')),
-    tslib_1.__metadata("design:paramtypes", [datasources_1.PostgresDataSource])
+    tslib_1.__param(0, core_1.inject('datasources.postgres')), tslib_1.__param(1, repository_1.repository.getter('LivroGeneroRepository')),
+    tslib_1.__metadata("design:paramtypes", [datasources_1.PostgresDataSource, Function])
 ], LivroRepository);
 exports.LivroRepository = LivroRepository;
 //# sourceMappingURL=livro.repository.js.map

@@ -4,17 +4,21 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
+  del, get,
+  getModelSchemaRef, param,
+
+
+  patch, post,
+
+
+
+
   put,
-  del,
-  requestBody,
+
+  requestBody
 } from '@loopback/rest';
 import {Livraria} from '../models';
 import {LivrariaRepository} from '../repositories';
@@ -22,7 +26,7 @@ import {LivrariaRepository} from '../repositories';
 export class LivrariaController {
   constructor(
     @repository(LivrariaRepository)
-    public livrariaRepository : LivrariaRepository,
+    public livrariaRepository: LivrariaRepository,
   ) {}
 
   @post('/livrarias', {

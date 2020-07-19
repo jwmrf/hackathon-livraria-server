@@ -4,25 +4,33 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
+  del, get,
+  getModelSchemaRef, param,
+
+
+  patch, post,
+
+
+
+
   put,
-  del,
-  requestBody,
+
+  requestBody
 } from '@loopback/rest';
 import {Livro} from '../models';
-import {LivroRepository} from '../repositories';
+import {GeneroRepository, LivroGeneroRepository, LivroRepository} from '../repositories';
 
 export class LivroController {
   constructor(
     @repository(LivroRepository)
-    public livroRepository : LivroRepository,
+    public livroRepository: LivroRepository,
+    @repository(LivroGeneroRepository)
+    public livroGeneroRepository: LivroGeneroRepository,
+    @repository(GeneroRepository)
+    public generoRepository: GeneroRepository
   ) {}
 
   @post('/livros', {
@@ -37,16 +45,26 @@ export class LivroController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Livro, {
-            title: 'NewLivro',
-            exclude: ['id'],
-          }),
         },
       },
     })
     livro: Omit<Livro, 'id'>,
   ): Promise<Livro> {
-    return this.livroRepository.create(livro);
+    var generos = livro.generos
+    delete livro.generos
+    var livroCriado = await this.livroRepository.create(livro);
+    if (generos) {
+      livroCriado.generos = []
+      for (let genero of generos) {
+        let generoBase = await this.generoRepository.findOne({where: {tipo: genero}})
+        if (generoBase) {
+          await this.livroGeneroRepository.create({livro_id: livroCriado.id, genero_id: generoBase.id})
+          livroCriado.generos.push(generoBase.tipo)
+        }
+      }
+    }
+    return livroCriado
+
   }
 
   @get('/livros/count', {
@@ -80,8 +98,21 @@ export class LivroController {
   })
   async find(
     @param.filter(Livro) filter?: Filter<Livro>,
-  ): Promise<Livro[]> {
-    return this.livroRepository.find(filter);
+  ): Promise<any> {
+    const livros = await this.livroRepository.find(filter);
+    /*
+    */
+    var livrosRetorno = []
+    for (let livro of livros) {
+      livro.generos = []
+      let generosLivros = await this.livroGeneroRepository.find({where: {livro_id: livro.id}});
+      for (let generoLivro of generosLivros) {
+        let generoNome = await this.generoRepository.findById(generoLivro.genero_id)
+        livro.generos.push(generoNome.tipo)
+      }
+      livrosRetorno.push(livro)
+    }
+    return livrosRetorno
   }
 
   @patch('/livros', {

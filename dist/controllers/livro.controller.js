@@ -7,17 +7,45 @@ const rest_1 = require("@loopback/rest");
 const models_1 = require("../models");
 const repositories_1 = require("../repositories");
 let LivroController = class LivroController {
-    constructor(livroRepository) {
+    constructor(livroRepository, livroGeneroRepository, generoRepository) {
         this.livroRepository = livroRepository;
+        this.livroGeneroRepository = livroGeneroRepository;
+        this.generoRepository = generoRepository;
     }
     async create(livro) {
-        return this.livroRepository.create(livro);
+        var generos = livro.generos;
+        delete livro.generos;
+        var livroCriado = await this.livroRepository.create(livro);
+        if (generos) {
+            livroCriado.generos = [];
+            for (let genero of generos) {
+                let generoBase = await this.generoRepository.findOne({ where: { tipo: genero } });
+                if (generoBase) {
+                    await this.livroGeneroRepository.create({ livro_id: livroCriado.id, genero_id: generoBase.id });
+                    livroCriado.generos.push(generoBase.tipo);
+                }
+            }
+        }
+        return livroCriado;
     }
     async count(where) {
         return this.livroRepository.count(where);
     }
     async find(filter) {
-        return this.livroRepository.find(filter);
+        const livros = await this.livroRepository.find(filter);
+        /*
+        */
+        var livrosRetorno = [];
+        for (let livro of livros) {
+            livro.generos = [];
+            let generosLivros = await this.livroGeneroRepository.find({ where: { livro_id: livro.id } });
+            for (let generoLivro of generosLivros) {
+                let generoNome = await this.generoRepository.findById(generoLivro.genero_id);
+                livro.generos.push(generoNome.tipo);
+            }
+            livrosRetorno.push(livro);
+        }
+        return livrosRetorno;
     }
     async updateAll(livro, where) {
         return this.livroRepository.updateAll(livro, where);
@@ -46,12 +74,7 @@ tslib_1.__decorate([
     }),
     tslib_1.__param(0, rest_1.requestBody({
         content: {
-            'application/json': {
-                schema: rest_1.getModelSchemaRef(models_1.Livro, {
-                    title: 'NewLivro',
-                    exclude: ['id'],
-                }),
-            },
+            'application/json': {},
         },
     })),
     tslib_1.__metadata("design:type", Function),
@@ -182,7 +205,11 @@ tslib_1.__decorate([
 ], LivroController.prototype, "deleteById", null);
 LivroController = tslib_1.__decorate([
     tslib_1.__param(0, repository_1.repository(repositories_1.LivroRepository)),
-    tslib_1.__metadata("design:paramtypes", [repositories_1.LivroRepository])
+    tslib_1.__param(1, repository_1.repository(repositories_1.LivroGeneroRepository)),
+    tslib_1.__param(2, repository_1.repository(repositories_1.GeneroRepository)),
+    tslib_1.__metadata("design:paramtypes", [repositories_1.LivroRepository,
+        repositories_1.LivroGeneroRepository,
+        repositories_1.GeneroRepository])
 ], LivroController);
 exports.LivroController = LivroController;
 //# sourceMappingURL=livro.controller.js.map

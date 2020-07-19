@@ -60,32 +60,6 @@ let UserController = class UserController {
             }
         }
     }
-    async createAdmin(newUserRequest) {
-        // All new users have the "customer" role by default
-        newUserRequest.role = 'admin';
-        // ensure a valid email value and password value
-        services_1.validateCredentials(lodash_1.default.pick(newUserRequest, ['email', 'password']));
-        // encrypt the password
-        const password = await this.passwordHasher.hashPassword(newUserRequest.password);
-        try {
-            // create the new user
-            const savedUser = await this.userRepository.create(lodash_1.default.omit(newUserRequest, 'password'));
-            // set the password
-            await this.userRepository
-                .userCredentials(savedUser.id)
-                .create({ password });
-            return savedUser;
-        }
-        catch (error) {
-            // MongoError 11000 duplicate key
-            if (error.code === 11000 && error.errmsg.includes('index: uniqueEmail')) {
-                throw new rest_1.HttpErrors.Conflict('Email value is already taken');
-            }
-            else {
-                throw error;
-            }
-        }
-    }
     async findById(userId) {
         return this.userRepository.findById(userId);
     }
@@ -123,26 +97,6 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], UserController.prototype, "create", null);
-tslib_1.__decorate([
-    rest_1.post('/users/sign-up/admin', {
-        responses: {
-            '200': {
-                description: 'User',
-                content: {
-                    'application/json': {
-                        schema: {
-                            'x-ts-type': models_1.User,
-                        },
-                    },
-                },
-            },
-        },
-    }),
-    tslib_1.__param(0, rest_1.requestBody(user_controller_specs_1.CredentialsRequestBody)),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Object]),
-    tslib_1.__metadata("design:returntype", Promise)
-], UserController.prototype, "createAdmin", null);
 tslib_1.__decorate([
     rest_1.get('/users/{userId}', {
         responses: {

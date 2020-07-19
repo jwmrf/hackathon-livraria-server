@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyUserService = void 0;
 const tslib_1 = require("tslib");
-const rest_1 = require("@loopback/rest");
-const repositories_1 = require("../repositories");
-const security_1 = require("@loopback/security");
-const repository_1 = require("@loopback/repository");
-const keys_1 = require("../keys");
 const context_1 = require("@loopback/context");
+const repository_1 = require("@loopback/repository");
+const rest_1 = require("@loopback/rest");
+const security_1 = require("@loopback/security");
+const keys_1 = require("../keys");
+const repositories_1 = require("../repositories");
 let MyUserService = class MyUserService {
     constructor(userRepository, passwordHasher) {
         this.userRepository = userRepository;
@@ -35,8 +35,7 @@ let MyUserService = class MyUserService {
         // since first name and lastName are optional, no error is thrown if not provided
         return {
             [security_1.securityId]: user.id,
-            id: user.id,
-            role: user.role,
+            id: user.id
         };
     }
 };

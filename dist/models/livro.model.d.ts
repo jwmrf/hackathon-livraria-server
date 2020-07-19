@@ -7,6 +7,7 @@ export declare class Livro extends Entity {
     texto_especial?: string;
     link_venda?: string;
     img_url?: string;
+    generos: string[];
     constructor(data?: Partial<Livro>);
 }
 export interface LivroRelations {

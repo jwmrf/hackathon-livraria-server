@@ -2,10 +2,9 @@ import { Entity } from '@loopback/repository';
 import { UserCredentials } from './user-credentials.model';
 export declare class User extends Entity {
     id: string;
-    win_stop: string;
-    loss_stop: string;
     email: string;
-    role: string;
+    name: string;
+    cep: string;
     userCredentials: UserCredentials;
     constructor(data?: Partial<User>);
 }

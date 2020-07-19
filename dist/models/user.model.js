@@ -21,20 +21,6 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     repository_1.property({
         type: 'string',
-        defaultFn: '10',
-    }),
-    tslib_1.__metadata("design:type", String)
-], User.prototype, "win_stop", void 0);
-tslib_1.__decorate([
-    repository_1.property({
-        type: 'string',
-        defaultFn: '10',
-    }),
-    tslib_1.__metadata("design:type", String)
-], User.prototype, "loss_stop", void 0);
-tslib_1.__decorate([
-    repository_1.property({
-        type: 'string',
         required: true,
     }),
     tslib_1.__metadata("design:type", String)
@@ -42,10 +28,16 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     repository_1.property({
         type: 'string',
-        nullable: false,
+        required: true,
     }),
     tslib_1.__metadata("design:type", String)
-], User.prototype, "role", void 0);
+], User.prototype, "name", void 0);
+tslib_1.__decorate([
+    repository_1.property({
+        type: 'string',
+    }),
+    tslib_1.__metadata("design:type", String)
+], User.prototype, "cep", void 0);
 tslib_1.__decorate([
     repository_1.hasOne(() => user_credentials_model_1.UserCredentials),
     tslib_1.__metadata("design:type", user_credentials_model_1.UserCredentials)

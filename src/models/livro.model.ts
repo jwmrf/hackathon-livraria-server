@@ -1,4 +1,5 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, hasMany, model, property} from '@loopback/repository';
+import {LivroGenero} from './livro-genero.model';
 
 @model()
 export class Livro extends Entity {
@@ -41,6 +42,15 @@ export class Livro extends Entity {
   })
   img_url?: string;
 
+  @hasMany(() => LivroGenero, {keyTo: 'livro_id'})
+  generos: string[];
+  /*
+  @property({
+    type: 'array',
+    required: false
+  })
+  generos?: string[];
+*/
 
   constructor(data?: Partial<Livro>) {
     super(data);

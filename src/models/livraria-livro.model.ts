@@ -1,4 +1,5 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {Livraria} from './livraria.model';
 
 @model()
 export class LivrariaLivro extends Entity {
@@ -9,19 +10,14 @@ export class LivrariaLivro extends Entity {
     defaultFn: 'uuidv4',
   })
   id?: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  livraria_id: string;
-
   @property({
     type: 'string',
     required: true,
   })
   livro_id: string;
 
+  @belongsTo(() => Livraria, {name: 'livrarialivro_livraria_id'})
+  livraria_id: string;
 
   constructor(data?: Partial<LivrariaLivro>) {
     super(data);

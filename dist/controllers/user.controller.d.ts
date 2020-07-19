@@ -13,7 +13,6 @@ export declare class UserController {
     userService: UserService<User, Credentials>;
     constructor(userRepository: UserRepository, passwordHasher: PasswordHasher, jwtService: TokenService, userService: UserService<User, Credentials>);
     create(newUserRequest: Credentials): Promise<User>;
-    createAdmin(newUserRequest: Credentials): Promise<User>;
     findById(userId: string): Promise<User>;
     printCurrentUser(currentUserProfile: UserProfile): Promise<User>;
     login(credentials: Credentials): Promise<{
