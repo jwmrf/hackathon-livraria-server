@@ -6,13 +6,13 @@ export class Cliente extends Entity {
     type: 'string',
     id: true,
     generated: false,
-    required: true,
+    defaultFn: 'uuidv4',
   })
   id: string;
 
   @property({
     type: 'string',
-    default: teste,
+    default: "teste",
   })
   telefone?: string;
 

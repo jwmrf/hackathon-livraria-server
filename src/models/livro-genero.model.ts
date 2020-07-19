@@ -5,7 +5,8 @@ export class LivroGenero extends Entity {
   @property({
     type: 'string',
     id: true,
-    generated: true,
+    generated: false,
+    defaultFn: 'uuidv4',
   })
   id?: string;
 
