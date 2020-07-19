@@ -1,6 +1,6 @@
 import {Getter, inject} from '@loopback/core';
 import {DefaultCrudRepository, HasOneRepositoryFactory, repository} from '@loopback/repository';
-import {MongoDataSource} from '../datasources';
+import {PostgresDataSource} from '../datasources';
 import {User, UserCredentials, UserRelations} from '../models';
 import {UserCredentialsRepository} from './user-credentials.repository';
 
@@ -13,7 +13,7 @@ export class UserRepository extends DefaultCrudRepository<
   public readonly userCredentials: HasOneRepositoryFactory<UserCredentials, typeof User.prototype.id>;
 
   constructor(
-    @inject('datasources.mongo') dataSource: MongoDataSource, @repository.getter('UserCredentialsRepository') protected userCredentialsRepositoryGetter: Getter<UserCredentialsRepository>,
+    @inject('datasources.postgres') dataSource: PostgresDataSource, @repository.getter('UserCredentialsRepository') protected userCredentialsRepositoryGetter: Getter<UserCredentialsRepository>,
   ) {
     super(User, dataSource);
     this.userCredentials = this.createHasOneRepositoryFactoryFor('userCredentials', userCredentialsRepositoryGetter);
