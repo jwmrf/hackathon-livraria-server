@@ -219,6 +219,7 @@ export class UserController {
     var flagCategoria = false;
     var livraria = await this.livrariaRepository.findOne()
     var livro = await this.livroRepository.findOne()
+    console.log(whatsapp.message)
     if (whatsapp.message) {
       if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
         mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase()
@@ -290,7 +291,7 @@ export class UserController {
         json: true
       })
         .then((response: any) => {
-          console.log('Response:', response);
+          //console.log('Response:', response);
           /// Momento de enviar o livro ao usuário
           if (flagSendLivro && livro) {
             request_promise.post({
@@ -310,7 +311,7 @@ export class UserController {
               json: true
             })
               .then((response: any) => {
-                console.log('Response:', response);
+                // console.log('Response:', response);
               })
               .catch((error: any) => {
                 console.log('Error:', error);
