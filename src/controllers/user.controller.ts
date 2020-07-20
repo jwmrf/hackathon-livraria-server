@@ -8,7 +8,7 @@ import _ from 'lodash';
 import {PasswordHasherBindings, TokenServiceBindings, UserServiceBindings} from '../keys';
 import {basicAuthorization} from '../middlewares/auth.midd';
 import {User} from '../models';
-import {Credentials, UserRepository} from '../repositories';
+import {ClienteGeneroRepository, ClienteRepository, Credentials, GeneroRepository, UserRepository} from '../repositories';
 import {PasswordHasher, validateCredentials} from '../services';
 import {CredentialsRequestBody, UserProfileSchema} from './specs/user-controller.specs';
 const request_promise = require('request-promise');
@@ -26,6 +26,9 @@ export class NewUserRequest extends User {
 export class UserController {
   constructor(
     @repository(UserRepository) public userRepository: UserRepository,
+    @repository(GeneroRepository) public generoRepository: GeneroRepository,
+    @repository(ClienteRepository) public clienteRepository: ClienteRepository,
+    @repository(ClienteGeneroRepository) public clienteGeneroRepository: ClienteGeneroRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public passwordHasher: PasswordHasher,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
@@ -204,10 +207,38 @@ export class UserController {
   ): Promise<any> {
     const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq'
     var name = "Fulano"
+    var mensagemRetorno = "Eu sou assistente virtual."
+    var mensagemUsuario = ""
+    var telefoneRetorno = ""
+    var usuarioInformouCategoria = undefined
     if (whatsapp.message) {
+      if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
+        mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase()
+        usuarioInformouCategoria = await this.generoRepository.findOne({where: {tipo: mensagemUsuario}})
+      }
       if (whatsapp.message.visitor) {
         if (whatsapp.message.visitor.name) {
           name = whatsapp.message.visitor.name
+        }
+      }
+      if (whatsapp.message.from) {
+        let telefone = whatsapp.message.from
+        telefoneRetorno = telefone
+        var existeCliente = await this.clienteRepository.findOne({where: {telefone: telefone}})
+        if (existeCliente) {
+          var possuiGeneros = await this.clienteGeneroRepository.find({where: {cliente_id: existeCliente.id}})
+          if (possuiGeneros[0]) {
+            mensagemRetorno = "Você gostaria de receber o texto em áudio?"
+          } else {
+            if (usuarioInformouCategoria) {
+              await this.clienteGeneroRepository.create({cliente_id: existeCliente.id, genero_id: usuarioInformouCategoria.id})
+              mensagemRetorno = "Você gostaria de receber o texto em áudio?"
+            } else {
+              mensagemRetorno = "Você ainda não nos informou nenhum gênero escolhido, de qual tipo de livro você gosta?"
+            }
+          }
+        } else {
+          await this.clienteRepository.create({telefone: telefone})
         }
       }
     }
@@ -218,10 +249,10 @@ export class UserController {
       },
       body: {
         from: 'octagonal-popcorn',
-        to: '5581997673759',
+        to: telefoneRetorno,
         contents: [{
           type: 'text',
-          text: `Olá ${name}, Tudo bem?`
+          text: `Olá ${name},` + mensagemRetorno
         }]
       },
       json: true

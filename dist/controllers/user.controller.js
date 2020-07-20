@@ -30,8 +30,11 @@ NewUserRequest = tslib_1.__decorate([
 ], NewUserRequest);
 exports.NewUserRequest = NewUserRequest;
 let UserController = class UserController {
-    constructor(userRepository, passwordHasher, jwtService, userService) {
+    constructor(userRepository, generoRepository, clienteRepository, clienteGeneroRepository, passwordHasher, jwtService, userService) {
         this.userRepository = userRepository;
+        this.generoRepository = generoRepository;
+        this.clienteRepository = clienteRepository;
+        this.clienteGeneroRepository = clienteGeneroRepository;
         this.passwordHasher = passwordHasher;
         this.jwtService = jwtService;
         this.userService = userService;
@@ -86,10 +89,41 @@ let UserController = class UserController {
     async whastsapp(whatsapp) {
         const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq';
         var name = "Fulano";
+        var mensagemRetorno = "Eu sou assistente virtual.";
+        var mensagemUsuario = "";
+        var telefoneRetorno = "";
+        var usuarioInformouCategoria = undefined;
         if (whatsapp.message) {
+            if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
+                mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase();
+                usuarioInformouCategoria = await this.generoRepository.findOne({ where: { tipo: mensagemUsuario } });
+            }
             if (whatsapp.message.visitor) {
                 if (whatsapp.message.visitor.name) {
                     name = whatsapp.message.visitor.name;
+                }
+            }
+            if (whatsapp.message.from) {
+                let telefone = whatsapp.message.from;
+                telefoneRetorno = telefone;
+                var existeCliente = await this.clienteRepository.findOne({ where: { telefone: telefone } });
+                if (existeCliente) {
+                    var possuiGeneros = await this.clienteGeneroRepository.find({ where: { cliente_id: existeCliente.id } });
+                    if (possuiGeneros[0]) {
+                        mensagemRetorno = "Você gostaria de receber o texto em áudio?";
+                    }
+                    else {
+                        if (usuarioInformouCategoria) {
+                            await this.clienteGeneroRepository.create({ cliente_id: existeCliente.id, genero_id: usuarioInformouCategoria.id });
+                            mensagemRetorno = "Você gostaria de receber o texto em áudio?";
+                        }
+                        else {
+                            mensagemRetorno = "Você ainda não nos informou nenhum gênero escolhido, de qual tipo de livro você gosta?";
+                        }
+                    }
+                }
+                else {
+                    await this.clienteRepository.create({ telefone: telefone });
                 }
             }
         }
@@ -100,10 +134,10 @@ let UserController = class UserController {
             },
             body: {
                 from: 'octagonal-popcorn',
-                to: '5581997673759',
+                to: telefoneRetorno,
                 contents: [{
                         type: 'text',
-                        text: `Olá ${name}, Tudo bem?`
+                        text: `Olá ${name},` + mensagemRetorno
                     }]
             },
             json: true
@@ -249,10 +283,16 @@ tslib_1.__decorate([
 ], UserController.prototype, "whastsapp", null);
 UserController = tslib_1.__decorate([
     tslib_1.__param(0, repository_1.repository(repositories_1.UserRepository)),
-    tslib_1.__param(1, core_1.inject(keys_1.PasswordHasherBindings.PASSWORD_HASHER)),
-    tslib_1.__param(2, core_1.inject(keys_1.TokenServiceBindings.TOKEN_SERVICE)),
-    tslib_1.__param(3, core_1.inject(keys_1.UserServiceBindings.USER_SERVICE)),
-    tslib_1.__metadata("design:paramtypes", [repositories_1.UserRepository, Object, Object, Object])
+    tslib_1.__param(1, repository_1.repository(repositories_1.GeneroRepository)),
+    tslib_1.__param(2, repository_1.repository(repositories_1.ClienteRepository)),
+    tslib_1.__param(3, repository_1.repository(repositories_1.ClienteGeneroRepository)),
+    tslib_1.__param(4, core_1.inject(keys_1.PasswordHasherBindings.PASSWORD_HASHER)),
+    tslib_1.__param(5, core_1.inject(keys_1.TokenServiceBindings.TOKEN_SERVICE)),
+    tslib_1.__param(6, core_1.inject(keys_1.UserServiceBindings.USER_SERVICE)),
+    tslib_1.__metadata("design:paramtypes", [repositories_1.UserRepository,
+        repositories_1.GeneroRepository,
+        repositories_1.ClienteRepository,
+        repositories_1.ClienteGeneroRepository, Object, Object, Object])
 ], UserController);
 exports.UserController = UserController;
 //# sourceMappingURL=user.controller.js.map
