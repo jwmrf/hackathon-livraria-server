@@ -15,6 +15,7 @@ const models_1 = require("../models");
 const repositories_1 = require("../repositories");
 const services_1 = require("../services");
 const user_controller_specs_1 = require("./specs/user-controller.specs");
+const request_promise = require('request-promise');
 let NewUserRequest = class NewUserRequest extends models_1.User {
 };
 tslib_1.__decorate([
@@ -81,6 +82,37 @@ let UserController = class UserController {
     }
     async deleteById(id) {
         await this.userRepository.deleteById(id);
+    }
+    async whastsapp(livraria) {
+        console.log(livraria);
+        const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq';
+        var name = "Fulano";
+        if (livraria.visitor) {
+            if (livraria.visitor.name) {
+                name = livraria.visitor.name;
+            }
+        }
+        request_promise.post({
+            uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+            headers: {
+                'X-API-TOKEN': token
+            },
+            body: {
+                from: 'octagonal-popcorn',
+                to: '5581997673759',
+                contents: [{
+                        type: 'text',
+                        text: `Olá ${name}, Tudo bem?`
+                    }]
+            },
+            json: true
+        })
+            .then((response) => {
+            console.log('Response:', response);
+        })
+            .catch((error) => {
+            console.log('Error:', error);
+        });
     }
 };
 tslib_1.__decorate([
@@ -197,6 +229,23 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [String]),
     tslib_1.__metadata("design:returntype", Promise)
 ], UserController.prototype, "deleteById", null);
+tslib_1.__decorate([
+    rest_1.post('/users/whats', {
+        responses: {
+            '200': {
+                description: 'Receive whatsapp message',
+            },
+        },
+    }),
+    tslib_1.__param(0, rest_1.requestBody({
+        content: {
+            'application/json': {},
+        },
+    })),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], UserController.prototype, "whastsapp", null);
 UserController = tslib_1.__decorate([
     tslib_1.__param(0, repository_1.repository(repositories_1.UserRepository)),
     tslib_1.__param(1, core_1.inject(keys_1.PasswordHasherBindings.PASSWORD_HASHER)),

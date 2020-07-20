@@ -11,6 +11,7 @@ import {User} from '../models';
 import {Credentials, UserRepository} from '../repositories';
 import {PasswordHasher, validateCredentials} from '../services';
 import {CredentialsRequestBody, UserProfileSchema} from './specs/user-controller.specs';
+const request_promise = require('request-promise');
 
 
 @model()
@@ -182,6 +183,53 @@ export class UserController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.userRepository.deleteById(id);
+  }
+
+
+  @post('/users/whats', {
+    responses: {
+      '200': {
+        description: 'Receive whatsapp message',
+      },
+    },
+  })
+  async whastsapp(
+    @requestBody({
+      content: {
+        'application/json': {
+        },
+      },
+    })
+    whatsapp: any,
+  ): Promise<any> {
+    const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq'
+    var name = "Fulano"
+    if (whatsapp.visitor) {
+      if (whatsapp.visitor.name) {
+        name = whatsapp.visitor.name
+      }
+    }
+    request_promise.post({
+      uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+      headers: {
+        'X-API-TOKEN': token
+      },
+      body: {
+        from: 'octagonal-popcorn',
+        to: '5581997673759',
+        contents: [{
+          type: 'text',
+          text: `Olá ${name}, Tudo bem?`
+        }]
+      },
+      json: true
+    })
+      .then((response: any) => {
+        console.log('Response:', response);
+      })
+      .catch((error: any) => {
+        console.log('Error:', error);
+      });
   }
 }
 

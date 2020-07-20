@@ -20,4 +20,5 @@ export declare class UserController {
     }>;
     getAll(): Promise<any>;
     deleteById(id: string): Promise<void>;
+    whastsapp(livraria: any): Promise<any>;
 }
