@@ -221,8 +221,8 @@ export class UserController {
     var livro = await this.livroRepository.findOne()
     console.log(whatsapp.message)
     if (whatsapp.message) {
-      if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
-        mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase()
+      if (whatsapp.message.contents && whatsapp.message.contents[1] && whatsapp.message.contents[1].text) {
+        mensagemUsuario = (whatsapp.message.contents[1].text).toLowerCase()
         console.log(mensagemUsuario)
         usuarioInformouCategoria = await this.generoRepository.findOne({where: {tipo: mensagemUsuario}})
         if (usuarioInformouCategoria) {
@@ -241,8 +241,8 @@ export class UserController {
         telefoneRetorno = telefone
         var existeCliente = await this.clienteRepository.findOne({where: {telefone: telefone}})
         if (existeCliente) {
-          if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
-            mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase()
+          if (whatsapp.message.contents && whatsapp.message.contents[1] && whatsapp.message.contents[1].text) {
+            mensagemUsuario = (whatsapp.message.contents[1].text).toLowerCase()
             usuarioInformouCategoria = await this.generoRepository.findOne({where: {tipo: mensagemUsuario}})
             if (usuarioInformouCategoria) {
               flagCategoria = true;
