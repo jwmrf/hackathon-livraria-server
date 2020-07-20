@@ -8,7 +8,7 @@ import _ from 'lodash';
 import {PasswordHasherBindings, TokenServiceBindings, UserServiceBindings} from '../keys';
 import {basicAuthorization} from '../middlewares/auth.midd';
 import {User} from '../models';
-import {ClienteGeneroRepository, ClienteRepository, Credentials, GeneroRepository, UserRepository} from '../repositories';
+import {ClienteGeneroRepository, ClienteRepository, Credentials, GeneroRepository, LivrariaLivroRepository, LivrariaRepository, LivroGeneroRepository, LivroRepository, UserRepository} from '../repositories';
 import {PasswordHasher, validateCredentials} from '../services';
 import {CredentialsRequestBody, UserProfileSchema} from './specs/user-controller.specs';
 const request_promise = require('request-promise');
@@ -29,6 +29,10 @@ export class UserController {
     @repository(GeneroRepository) public generoRepository: GeneroRepository,
     @repository(ClienteRepository) public clienteRepository: ClienteRepository,
     @repository(ClienteGeneroRepository) public clienteGeneroRepository: ClienteGeneroRepository,
+    @repository(LivroGeneroRepository) public livroGeneroRepository: LivroGeneroRepository,
+    @repository(LivroRepository) public livroRepository: LivroRepository,
+    @repository(LivrariaLivroRepository) public livrariaLivroRepository: LivrariaLivroRepository,
+    @repository(LivrariaRepository) public livrariaRepository: LivrariaRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public passwordHasher: PasswordHasher,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
@@ -207,10 +211,13 @@ export class UserController {
   ): Promise<any> {
     const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq'
     var name = "Fulano"
-    var mensagemRetorno = "Eu sou assistente virtual."
+    var mensagemRetorno = " Eu sou assistente virtual."
     var mensagemUsuario = ""
     var telefoneRetorno = ""
     var usuarioInformouCategoria = undefined
+    var flagSendLivro = false
+    var livraria = await this.livrariaRepository.findOne()
+    var livro = await this.livroRepository.findOne()
     if (whatsapp.message) {
       if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
         mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase()
@@ -226,15 +233,24 @@ export class UserController {
         telefoneRetorno = telefone
         var existeCliente = await this.clienteRepository.findOne({where: {telefone: telefone}})
         if (existeCliente) {
-          var possuiGeneros = await this.clienteGeneroRepository.find({where: {cliente_id: existeCliente.id}})
-          if (possuiGeneros[0]) {
-            mensagemRetorno = "Você gostaria de receber o texto em áudio?"
+          var possuiGeneros = await this.clienteGeneroRepository.findOne({where: {cliente_id: existeCliente.id}})
+          if (possuiGeneros) {
+            mensagemRetorno = " Você gostaria de receber o texto em áudio?"
+            if (mensagemUsuario == "não" || mensagemUsuario == "nao") {
+              flagSendLivro = true;
+              let livrogenero = await this.livroGeneroRepository.findOne({where: {genero_id: possuiGeneros.genero_id}});
+              if (livrogenero) {
+                livro = await this.livroRepository.findById(livrogenero.livro_id)
+                livraria = await this.livrariaRepository.findOne()
+                mensagemRetorno = " Encontramos um livro ótimo para você na livraria : " + livraria?.nome;
+              }
+            }
           } else {
             if (usuarioInformouCategoria) {
+              mensagemRetorno = " Você gostaria de receber o texto em áudio?"
               await this.clienteGeneroRepository.create({cliente_id: existeCliente.id, genero_id: usuarioInformouCategoria.id})
-              mensagemRetorno = "Você gostaria de receber o texto em áudio?"
             } else {
-              mensagemRetorno = "Você ainda não nos informou nenhum gênero escolhido, de qual tipo de livro você gosta?"
+              mensagemRetorno = " Você ainda não nos informou nenhum gênero escolhido, de qual tipo de livro você gosta?"
             }
           }
         } else {
@@ -242,27 +258,58 @@ export class UserController {
         }
       }
     }
-    request_promise.post({
-      uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
-      headers: {
-        'X-API-TOKEN': token
-      },
-      body: {
-        from: 'octagonal-popcorn',
-        to: telefoneRetorno,
-        contents: [{
-          type: 'text',
-          text: `Olá ${name},` + mensagemRetorno
-        }]
-      },
-      json: true
-    })
-      .then((response: any) => {
-        console.log('Response:', response);
+    setTimeout(() => {
+      /*
+      */
+      request_promise.post({
+        uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+        headers: {
+          'X-API-TOKEN': token
+        },
+        body: {
+          from: 'octagonal-popcorn',
+          to: telefoneRetorno,
+          contents: [{
+            type: 'text',
+            text: `Olá ${name},` + mensagemRetorno
+          }]
+        },
+        json: true
       })
-      .catch((error: any) => {
-        console.log('Error:', error);
-      });
+        .then((response: any) => {
+          console.log('Response:', response);
+          /// Momento de enviar o livro ao usuário
+          if (flagSendLivro && livro) {
+            request_promise.post({
+              uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+              headers: {
+                'X-API-TOKEN': token
+              },
+              body: {
+                from: 'octagonal-popcorn',
+                to: telefoneRetorno,
+                contents: [{
+                  type: 'file',
+                  fileUrl: livro.img_url,
+                  fileCaption: livro.sinopse
+                }]
+              },
+              json: true
+            })
+              .then((response: any) => {
+                console.log('Response:', response);
+              })
+              .catch((error: any) => {
+                console.log('Error:', error);
+              });
+          }
+        })
+        .catch((error: any) => {
+          console.log('Error:', error);
+        });
+
+
+    }, 500)
   }
 }
 

@@ -30,11 +30,15 @@ NewUserRequest = tslib_1.__decorate([
 ], NewUserRequest);
 exports.NewUserRequest = NewUserRequest;
 let UserController = class UserController {
-    constructor(userRepository, generoRepository, clienteRepository, clienteGeneroRepository, passwordHasher, jwtService, userService) {
+    constructor(userRepository, generoRepository, clienteRepository, clienteGeneroRepository, livroGeneroRepository, livroRepository, livrariaLivroRepository, livrariaRepository, passwordHasher, jwtService, userService) {
         this.userRepository = userRepository;
         this.generoRepository = generoRepository;
         this.clienteRepository = clienteRepository;
         this.clienteGeneroRepository = clienteGeneroRepository;
+        this.livroGeneroRepository = livroGeneroRepository;
+        this.livroRepository = livroRepository;
+        this.livrariaLivroRepository = livrariaLivroRepository;
+        this.livrariaRepository = livrariaRepository;
         this.passwordHasher = passwordHasher;
         this.jwtService = jwtService;
         this.userService = userService;
@@ -89,10 +93,13 @@ let UserController = class UserController {
     async whastsapp(whatsapp) {
         const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq';
         var name = "Fulano";
-        var mensagemRetorno = "Eu sou assistente virtual.";
+        var mensagemRetorno = " Eu sou assistente virtual.";
         var mensagemUsuario = "";
         var telefoneRetorno = "";
         var usuarioInformouCategoria = undefined;
+        var flagSendLivro = false;
+        var livraria = await this.livrariaRepository.findOne();
+        var livro = await this.livroRepository.findOne();
         if (whatsapp.message) {
             if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
                 mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase();
@@ -108,17 +115,26 @@ let UserController = class UserController {
                 telefoneRetorno = telefone;
                 var existeCliente = await this.clienteRepository.findOne({ where: { telefone: telefone } });
                 if (existeCliente) {
-                    var possuiGeneros = await this.clienteGeneroRepository.find({ where: { cliente_id: existeCliente.id } });
-                    if (possuiGeneros[0]) {
-                        mensagemRetorno = "Você gostaria de receber o texto em áudio?";
+                    var possuiGeneros = await this.clienteGeneroRepository.findOne({ where: { cliente_id: existeCliente.id } });
+                    if (possuiGeneros) {
+                        mensagemRetorno = " Você gostaria de receber o texto em áudio?";
+                        if (mensagemUsuario == "não" || mensagemUsuario == "nao") {
+                            flagSendLivro = true;
+                            let livrogenero = await this.livroGeneroRepository.findOne({ where: { genero_id: possuiGeneros.genero_id } });
+                            if (livrogenero) {
+                                livro = await this.livroRepository.findById(livrogenero.livro_id);
+                                livraria = await this.livrariaRepository.findOne();
+                                mensagemRetorno = " Encontramos um livro ótimo para você na livraria : " + (livraria === null || livraria === void 0 ? void 0 : livraria.nome);
+                            }
+                        }
                     }
                     else {
                         if (usuarioInformouCategoria) {
+                            mensagemRetorno = " Você gostaria de receber o texto em áudio?";
                             await this.clienteGeneroRepository.create({ cliente_id: existeCliente.id, genero_id: usuarioInformouCategoria.id });
-                            mensagemRetorno = "Você gostaria de receber o texto em áudio?";
                         }
                         else {
-                            mensagemRetorno = "Você ainda não nos informou nenhum gênero escolhido, de qual tipo de livro você gosta?";
+                            mensagemRetorno = " Você ainda não nos informou nenhum gênero escolhido, de qual tipo de livro você gosta?";
                         }
                     }
                 }
@@ -127,27 +143,56 @@ let UserController = class UserController {
                 }
             }
         }
-        request_promise.post({
-            uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
-            headers: {
-                'X-API-TOKEN': token
-            },
-            body: {
-                from: 'octagonal-popcorn',
-                to: telefoneRetorno,
-                contents: [{
-                        type: 'text',
-                        text: `Olá ${name},` + mensagemRetorno
-                    }]
-            },
-            json: true
-        })
-            .then((response) => {
-            console.log('Response:', response);
-        })
-            .catch((error) => {
-            console.log('Error:', error);
-        });
+        setTimeout(() => {
+            /*
+            */
+            request_promise.post({
+                uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+                headers: {
+                    'X-API-TOKEN': token
+                },
+                body: {
+                    from: 'octagonal-popcorn',
+                    to: telefoneRetorno,
+                    contents: [{
+                            type: 'text',
+                            text: `Olá ${name},` + mensagemRetorno
+                        }]
+                },
+                json: true
+            })
+                .then((response) => {
+                console.log('Response:', response);
+                /// Momento de enviar o livro ao usuário
+                if (flagSendLivro && livro) {
+                    request_promise.post({
+                        uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+                        headers: {
+                            'X-API-TOKEN': token
+                        },
+                        body: {
+                            from: 'octagonal-popcorn',
+                            to: telefoneRetorno,
+                            contents: [{
+                                    type: 'file',
+                                    fileUrl: livro.img_url,
+                                    fileCaption: livro.sinopse
+                                }]
+                        },
+                        json: true
+                    })
+                        .then((response) => {
+                        console.log('Response:', response);
+                    })
+                        .catch((error) => {
+                        console.log('Error:', error);
+                    });
+                }
+            })
+                .catch((error) => {
+                console.log('Error:', error);
+            });
+        }, 500);
     }
 };
 tslib_1.__decorate([
@@ -286,13 +331,21 @@ UserController = tslib_1.__decorate([
     tslib_1.__param(1, repository_1.repository(repositories_1.GeneroRepository)),
     tslib_1.__param(2, repository_1.repository(repositories_1.ClienteRepository)),
     tslib_1.__param(3, repository_1.repository(repositories_1.ClienteGeneroRepository)),
-    tslib_1.__param(4, core_1.inject(keys_1.PasswordHasherBindings.PASSWORD_HASHER)),
-    tslib_1.__param(5, core_1.inject(keys_1.TokenServiceBindings.TOKEN_SERVICE)),
-    tslib_1.__param(6, core_1.inject(keys_1.UserServiceBindings.USER_SERVICE)),
+    tslib_1.__param(4, repository_1.repository(repositories_1.LivroGeneroRepository)),
+    tslib_1.__param(5, repository_1.repository(repositories_1.LivroRepository)),
+    tslib_1.__param(6, repository_1.repository(repositories_1.LivrariaLivroRepository)),
+    tslib_1.__param(7, repository_1.repository(repositories_1.LivrariaRepository)),
+    tslib_1.__param(8, core_1.inject(keys_1.PasswordHasherBindings.PASSWORD_HASHER)),
+    tslib_1.__param(9, core_1.inject(keys_1.TokenServiceBindings.TOKEN_SERVICE)),
+    tslib_1.__param(10, core_1.inject(keys_1.UserServiceBindings.USER_SERVICE)),
     tslib_1.__metadata("design:paramtypes", [repositories_1.UserRepository,
         repositories_1.GeneroRepository,
         repositories_1.ClienteRepository,
-        repositories_1.ClienteGeneroRepository, Object, Object, Object])
+        repositories_1.ClienteGeneroRepository,
+        repositories_1.LivroGeneroRepository,
+        repositories_1.LivroRepository,
+        repositories_1.LivrariaLivroRepository,
+        repositories_1.LivrariaRepository, Object, Object, Object])
 ], UserController);
 exports.UserController = UserController;
 //# sourceMappingURL=user.controller.js.map
