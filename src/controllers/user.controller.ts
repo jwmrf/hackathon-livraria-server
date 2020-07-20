@@ -273,7 +273,7 @@ export class UserController {
       }
     }
     setTimeout(() => {
-      /*
+
       request_promise.post({
         uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
         headers: {
@@ -289,7 +289,7 @@ export class UserController {
         },
         json: true
       })
-      .then((response: any) => {
+        .then((response: any) => {
           console.log('Response:', response);
           /// Momento de enviar o livro ao usuário
           if (flagSendLivro && livro) {
@@ -315,14 +315,14 @@ export class UserController {
               .catch((error: any) => {
                 console.log('Error:', error);
               });
-            }
-          })
-          .catch((error: any) => {
-            console.log('Error:', error);
-          });
+          }
+        })
+        .catch((error: any) => {
+          console.log('Error:', error);
+        });
 
 
-          */
+
     }, 500)
   }
 }

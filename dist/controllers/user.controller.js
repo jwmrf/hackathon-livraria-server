@@ -156,56 +156,52 @@ let UserController = class UserController {
             }
         }
         setTimeout(() => {
-            /*
             request_promise.post({
-              uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
-              headers: {
-                'X-API-TOKEN': token
-              },
-              body: {
-                from: 'octagonal-popcorn',
-                to: telefoneRetorno,
-                contents: [{
-                  type: 'text',
-                  text: `Olá ${name},` + mensagemRetorno
-                }]
-              },
-              json: true
+                uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+                headers: {
+                    'X-API-TOKEN': token
+                },
+                body: {
+                    from: 'octagonal-popcorn',
+                    to: telefoneRetorno,
+                    contents: [{
+                            type: 'text',
+                            text: `Olá ${name},` + mensagemRetorno
+                        }]
+                },
+                json: true
             })
-            .then((response: any) => {
+                .then((response) => {
                 console.log('Response:', response);
                 /// Momento de enviar o livro ao usuário
                 if (flagSendLivro && livro) {
-                  request_promise.post({
-                    uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
-                    headers: {
-                      'X-API-TOKEN': token
-                    },
-                    body: {
-                      from: 'octagonal-popcorn',
-                      to: telefoneRetorno,
-                      contents: [{
-                        type: 'file',
-                        fileUrl: livro.img_url,
-                        fileCaption: livro.sinopse
-                      }]
-                    },
-                    json: true
-                  })
-                    .then((response: any) => {
-                      console.log('Response:', response);
+                    request_promise.post({
+                        uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
+                        headers: {
+                            'X-API-TOKEN': token
+                        },
+                        body: {
+                            from: 'octagonal-popcorn',
+                            to: telefoneRetorno,
+                            contents: [{
+                                    type: 'file',
+                                    fileUrl: livro.img_url,
+                                    fileCaption: livro.sinopse
+                                }]
+                        },
+                        json: true
                     })
-                    .catch((error: any) => {
-                      console.log('Error:', error);
+                        .then((response) => {
+                        console.log('Response:', response);
+                    })
+                        .catch((error) => {
+                        console.log('Error:', error);
                     });
-                  }
-                })
-                .catch((error: any) => {
-                  console.log('Error:', error);
-                });
-      
-      
-                */
+                }
+            })
+                .catch((error) => {
+                console.log('Error:', error);
+            });
         }, 500);
     }
 };
