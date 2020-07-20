@@ -214,14 +214,21 @@ export class UserController {
     var mensagemRetorno = " Eu sou assistente virtual."
     var mensagemUsuario = ""
     var telefoneRetorno = ""
-    var usuarioInformouCategoria = undefined
+    var usuarioInformouCategoria = await this.generoRepository.findOne({where: {tipo: "teste"}})
     var flagSendLivro = false
+    var flagCategoria = false;
     var livraria = await this.livrariaRepository.findOne()
     var livro = await this.livroRepository.findOne()
     if (whatsapp.message) {
       if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
         mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase()
+        console.log(mensagemUsuario)
         usuarioInformouCategoria = await this.generoRepository.findOne({where: {tipo: mensagemUsuario}})
+        if (usuarioInformouCategoria) {
+          flagCategoria = true;
+        }
+
+
       }
       if (whatsapp.message.visitor) {
         if (whatsapp.message.visitor.name) {
@@ -233,6 +240,13 @@ export class UserController {
         telefoneRetorno = telefone
         var existeCliente = await this.clienteRepository.findOne({where: {telefone: telefone}})
         if (existeCliente) {
+          if (whatsapp.message.contents && whatsapp.message.contents[0] && whatsapp.message.contents[0].text) {
+            mensagemUsuario = (whatsapp.message.contents[0].text).toLowerCase()
+            usuarioInformouCategoria = await this.generoRepository.findOne({where: {tipo: mensagemUsuario}})
+            if (usuarioInformouCategoria) {
+              flagCategoria = true;
+            }
+          }
           var possuiGeneros = await this.clienteGeneroRepository.findOne({where: {cliente_id: existeCliente.id}})
           if (possuiGeneros) {
             mensagemRetorno = " Você gostaria de receber o texto em áudio?"
@@ -246,9 +260,9 @@ export class UserController {
               }
             }
           } else {
-            if (usuarioInformouCategoria) {
+            if (flagCategoria) {
               mensagemRetorno = " Você gostaria de receber o texto em áudio?"
-              await this.clienteGeneroRepository.create({cliente_id: existeCliente.id, genero_id: usuarioInformouCategoria.id})
+              await this.clienteGeneroRepository.create({cliente_id: existeCliente.id, genero_id: (usuarioInformouCategoria) ? usuarioInformouCategoria.id : "fc2d1e7c-0b70-4f93-99f5-bbaa058ed795"})
             } else {
               mensagemRetorno = " Você ainda não nos informou nenhum gênero escolhido, de qual tipo de livro você gosta?"
             }
@@ -260,7 +274,6 @@ export class UserController {
     }
     setTimeout(() => {
       /*
-      */
       request_promise.post({
         uri: 'https://api.zenvia.com/v1/channels/whatsapp/messages',
         headers: {
@@ -276,7 +289,7 @@ export class UserController {
         },
         json: true
       })
-        .then((response: any) => {
+      .then((response: any) => {
           console.log('Response:', response);
           /// Momento de enviar o livro ao usuário
           if (flagSendLivro && livro) {
@@ -302,13 +315,14 @@ export class UserController {
               .catch((error: any) => {
                 console.log('Error:', error);
               });
-          }
-        })
-        .catch((error: any) => {
-          console.log('Error:', error);
-        });
+            }
+          })
+          .catch((error: any) => {
+            console.log('Error:', error);
+          });
 
 
+          */
     }, 500)
   }
 }
