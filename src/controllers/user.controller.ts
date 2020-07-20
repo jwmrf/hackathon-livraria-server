@@ -204,9 +204,11 @@ export class UserController {
   ): Promise<any> {
     const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq'
     var name = "Fulano"
-    if (whatsapp.visitor) {
-      if (whatsapp.visitor.name) {
-        name = whatsapp.visitor.name
+    if (whatsapp.message) {
+      if (whatsapp.message.visitor) {
+        if (whatsapp.message.visitor.name) {
+          name = whatsapp.message.visitor.name
+        }
       }
     }
     request_promise.post({

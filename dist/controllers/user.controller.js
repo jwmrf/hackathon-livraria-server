@@ -83,13 +83,14 @@ let UserController = class UserController {
     async deleteById(id) {
         await this.userRepository.deleteById(id);
     }
-    async whastsapp(livraria) {
-        console.log(livraria);
+    async whastsapp(whatsapp) {
         const token = 'WNStZoqjzS7hRAJVDZAzDCq28K5cSbyrZKjq';
         var name = "Fulano";
-        if (livraria.visitor) {
-            if (livraria.visitor.name) {
-                name = livraria.visitor.name;
+        if (whatsapp.message) {
+            if (whatsapp.message.visitor) {
+                if (whatsapp.message.visitor.name) {
+                    name = whatsapp.message.visitor.name;
+                }
             }
         }
         request_promise.post({
