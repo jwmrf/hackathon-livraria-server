@@ -29,7 +29,7 @@
     "isemail": "^3.2.0",
     "jsonwebtoken": "^8.5.1",
     "loopback-connector-mongodb": "^4.2.0",
-    "loopback-connector-postgresql": "^5.0.2",
+    "loopback-connector-postgresql": "^5.5.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
     "source-map-support": "^0.5.19",
